@@ -20,7 +20,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
 
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
@@ -80,6 +80,22 @@ public class FollowerRestAdapterTest {
         Mockito.verify(followerInputPort, times(1)).save(any());
         Mockito.verify(followerRestMapper, times(1)).toFollower(any(CreateFollowerRequest.class));
         Mockito.verify(followerRestMapper, times(1)).toFollowerResponse(any(Follower.class));
+    }
+
+    @Test
+    @DisplayName("When Unfollow Is Called With Valid FollowerId And FollowedId Expect No Content Status")
+    void when_UnfollowIsCalledWithValidFollowerIdAndFollowedId_Expect_NoContentStatus() {
+        Long followerId = 1L;
+        Long followedId = 2L;
+
+        when(followerInputPort.unfollow(anyLong(), anyLong())).thenReturn(Mono.empty());
+
+        webTestClient.delete()
+                .uri("/followers/unfollow/{followerId}/follower/{followedId}/followed", followerId, followedId)
+                .exchange()
+                .expectStatus().isNoContent();
+
+        Mockito.verify(followerInputPort, times(1)).unfollow(anyLong(), anyLong());
     }
 
 

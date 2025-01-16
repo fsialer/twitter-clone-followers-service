@@ -17,6 +17,7 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
@@ -65,5 +66,19 @@ public class FollowerPersistenceAdapterTest {
         Mockito.verify(followerReactiveMongoRepository, times(1)).save(any(FollowerDocument.class));
         Mockito.verify(followerPersistenceMapper, times(1)).toFollowerDocument(any(Follower.class));
         Mockito.verify(followerPersistenceMapper, times(1)).toFollower(any(Mono.class));
+    }
+
+    @Test
+    @DisplayName("When Delete Is Called With A Valid Id Expect Follower To Be Deleted Successfully")
+    void when_DeleteIsCalledWithValidId_Expect_FollowerDeletedSuccessfully() {
+
+        when(followerReactiveMongoRepository.deleteById(anyString())).thenReturn(Mono.empty());
+
+        Mono<Void> result = followerPersistenceAdapter.delete("678962f84a0e146fa0f20569");
+
+        StepVerifier.create(result)
+                .verifyComplete();
+
+        Mockito.verify(followerReactiveMongoRepository, times(1)).deleteById(anyString());
     }
 }

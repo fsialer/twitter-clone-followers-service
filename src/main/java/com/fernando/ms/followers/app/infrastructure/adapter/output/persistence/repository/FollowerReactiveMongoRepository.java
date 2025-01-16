@@ -3,7 +3,9 @@ package com.fernando.ms.followers.app.infrastructure.adapter.output.persistence.
 import com.fernando.ms.followers.app.infrastructure.adapter.output.persistence.models.FollowerDocument;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 public interface FollowerReactiveMongoRepository extends ReactiveMongoRepository<FollowerDocument,String> {
     Flux<FollowerDocument> findAllByFollowerId(Long followerId);
+    Mono<FollowerDocument> findByFollowedId(String followed);
 }

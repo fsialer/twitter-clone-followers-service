@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fernando.ms.followers.app.Utils.TestUtilsFollower;
 import com.fernando.ms.followers.app.application.ports.input.FollowerInputPort;
+import com.fernando.ms.followers.app.domain.exception.FollowedNotFoundException;
+import com.fernando.ms.followers.app.domain.exception.FollowerNotFoundException;
 import com.fernando.ms.followers.app.infrastructure.adapter.input.rest.mapper.FollowerRestMapper;
 import com.fernando.ms.followers.app.infrastructure.adapter.input.rest.models.request.CreateFollowerRequest;
 import com.fernando.ms.followers.app.infrastructure.adapter.input.rest.models.response.ErrorResponse;
@@ -19,10 +21,11 @@ import reactor.core.publisher.Mono;
 
 import java.util.Collections;
 
+import static com.fernando.ms.followers.app.infrastructure.adapter.input.rest.models.enums.ErrorType.FUNCTIONAL;
 import static com.fernando.ms.followers.app.infrastructure.adapter.input.rest.models.enums.ErrorType.SYSTEM;
-import static com.fernando.ms.followers.app.infrastructure.utils.ErrorCatalog.FOLLOWER_BAD_PARAMETERS;
-import static com.fernando.ms.followers.app.infrastructure.utils.ErrorCatalog.INTERNAL_SERVER_ERROR;
+import static com.fernando.ms.followers.app.infrastructure.utils.ErrorCatalog.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
@@ -82,6 +85,44 @@ public class GlobalControllerAdviceTest {
                 .value(response -> {
                     assert response.getCode().equals(FOLLOWER_BAD_PARAMETERS.getCode());
                     assert response.getMessage().equals(FOLLOWER_BAD_PARAMETERS.getMessage());
+                });
+    }
+
+    @Test
+    @DisplayName("When FollowerNotFoundException is thrown, expect BAD_REQUEST status and correct error response")
+    void when_FollowerNotFoundExceptionThrown_Expect_BadRequestAndCorrectErrorResponse() {
+        FollowerNotFoundException exception = new FollowerNotFoundException();
+        Long followerId = 1L;
+        Long followedId = 2L;
+        when(followerInputPort.unfollow(anyLong(),anyLong())).thenReturn(Mono.error(exception));
+        webTestClient.delete()
+                .uri("/followers/unfollow/{followerId}/follower/{followedId}/followed", followerId, followedId)
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody(ErrorResponse.class)
+                .value(response -> {
+                    assert response.getCode().equals(FOLLOWER_NOT_FOUND.getCode());
+                    assert response.getType().equals(FUNCTIONAL);
+                    assert response.getMessage().equals(FOLLOWER_NOT_FOUND.getMessage());
+                });
+    }
+
+    @Test
+    @DisplayName("When FollowedNotFoundException is thrown, expect BAD_REQUEST status and correct error response")
+    void when_FollowedNotFoundExceptionThrown_Expect_BadRequestAndCorrectErrorResponse() {
+        Long followerId = 1L;
+        Long followedId = 2L;
+        FollowedNotFoundException exception = new FollowedNotFoundException();
+        when(followerInputPort.unfollow(anyLong(),anyLong())).thenReturn(Mono.error(exception));
+        webTestClient.delete()
+                .uri("/followers/unfollow/{followerId}/follower/{followedId}/followed", followerId, followedId)
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody(ErrorResponse.class)
+                .value(response -> {
+                    assert response.getCode().equals(FOLLOWED_NOT_FOUND.getCode());
+                    assert response.getType().equals(FUNCTIONAL);
+                    assert response.getMessage().equals(FOLLOWED_NOT_FOUND.getMessage());
                 });
     }
 

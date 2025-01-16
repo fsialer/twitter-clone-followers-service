@@ -7,6 +7,7 @@ import com.fernando.ms.followers.app.infrastructure.adapter.input.rest.models.re
 import com.fernando.ms.followers.app.infrastructure.adapter.input.rest.models.response.QuantityFollowerResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
@@ -35,5 +36,11 @@ public class FollowerRestAdapter {
                     String location="/followers/".concat(follower.getId());
                     return Mono.just(ResponseEntity.created(URI.create(location)).body(followerRestMapper.toFollowerResponse(follower)));
                 });
+    }
+
+    @DeleteMapping("/unfollow/{followerId}/follower/{followedId}/followed")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public Mono<Void> unfollow(@PathVariable("followerId") Long followerId,@PathVariable("followedId") Long followedId){
+        return followerInputPort.unfollow(followerId,followedId);
     }
 }

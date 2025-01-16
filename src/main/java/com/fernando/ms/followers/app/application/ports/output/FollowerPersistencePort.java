@@ -7,4 +7,6 @@ import reactor.core.publisher.Mono;
 public interface FollowerPersistencePort {
     Flux<Follower> findAllByFollowerId(Long followerId);
     Mono<Follower> save(Follower follower);
+    Mono<Follower> findByFollowedId(String id);
+    Mono<Void> delete(String id);
 }

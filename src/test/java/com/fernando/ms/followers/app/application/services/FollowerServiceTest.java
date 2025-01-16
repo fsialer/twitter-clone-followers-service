@@ -2,6 +2,8 @@ package com.fernando.ms.followers.app.application.services;
 
 import com.fernando.ms.followers.app.Utils.TestUtilsFollower;
 import com.fernando.ms.followers.app.application.ports.output.FollowerPersistencePort;
+import com.fernando.ms.followers.app.domain.exception.FollowedNotFoundException;
+import com.fernando.ms.followers.app.domain.exception.FollowerNotFoundException;
 import com.fernando.ms.followers.app.domain.models.Follower;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,7 +17,7 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
@@ -55,6 +57,64 @@ public class FollowerServiceTest {
                 .verifyComplete();
 
         Mockito.verify(followerPersistencePort, times(1)).save(any(Follower.class));
+    }
+
+    @Test
+    @DisplayName("When followerId and followedId are correct, expect follower to be unfollowed successfully")
+    void when_FollowerIdAndFollowedIdAreCorrect_Expect_FollowerUnfollowedSuccessfully() {
+        Long followerId = 1L;
+        Long followedId = 2L;
+        Follower follower = TestUtilsFollower.buildFollowerMock();
+        follower.getFollowed().setId(followedId);
+
+        when(followerPersistencePort.findAllByFollowerId(anyLong())).thenReturn(Flux.just(follower));
+        when(followerPersistencePort.delete(anyString())).thenReturn(Mono.empty());
+
+        Mono<Void> result = followerService.unfollow(followerId, followedId);
+
+        StepVerifier.create(result)
+                .verifyComplete();
+
+        Mockito.verify(followerPersistencePort, times(1)).findAllByFollowerId(anyLong());
+        Mockito.verify(followerPersistencePort, times(1)).delete(anyString());
+    }
+
+    @Test
+    @DisplayName("Expect FollowerNotFoundException When Follower Id Does Not Exist")
+    void Expect_FollowerNotFoundException_when_FollowerIdDoesNotExist() {
+        Long followerId = 1L;
+        Long followedId = 2L;
+
+        when(followerPersistencePort.findAllByFollowerId(anyLong())).thenReturn(Flux.empty());
+
+        Mono<Void> result = followerService.unfollow(followerId, followedId);
+
+        StepVerifier.create(result)
+                .expectError(FollowerNotFoundException.class)
+                .verify();
+
+        Mockito.verify(followerPersistencePort, times(1)).findAllByFollowerId(anyLong());
+        Mockito.verify(followerPersistencePort, times(0)).delete(anyString());
+    }
+
+    @Test
+    @DisplayName("Expect FollowedNotFoundException When Followed Id Does Not Exist")
+    void Expect_FollowedNotFoundException_When_FollowedIdDoesNotExist() {
+        Long followerId = 1L;
+        Long followedId = 2L;
+        Follower follower = TestUtilsFollower.buildFollowerMock();
+        follower.getFollowed().setId(3L); // Different followedId
+
+        when(followerPersistencePort.findAllByFollowerId(anyLong())).thenReturn(Flux.just(follower));
+
+        Mono<Void> result = followerService.unfollow(followerId, followedId);
+
+        StepVerifier.create(result)
+                .expectError(FollowedNotFoundException.class)
+                .verify();
+
+        Mockito.verify(followerPersistencePort, times(1)).findAllByFollowerId(anyLong());
+        Mockito.verify(followerPersistencePort, times(0)).delete(anyString());
     }
 
 }

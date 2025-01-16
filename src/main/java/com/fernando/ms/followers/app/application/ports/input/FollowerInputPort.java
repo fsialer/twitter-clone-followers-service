@@ -6,4 +6,5 @@ import reactor.core.publisher.Mono;
 public interface FollowerInputPort {
     Mono<Long> quantityFollowers(Long followerId);
     Mono<Follower> save(Follower follower);
+    Mono<Void> unfollow(Long followerId,Long followedId);
 }

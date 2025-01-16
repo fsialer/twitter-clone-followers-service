@@ -32,4 +32,14 @@ public class FollowerPersistenceAdapter implements FollowerPersistencePort {
         followerDocument.setCreateAt(LocalDateTime.now());
         return followerPersistenceMapper.toFollower(followerReactiveMongoRepository.save(followerDocument));
     }
+
+    @Override
+    public Mono<Follower> findByFollowedId(String id) {
+        return followerReactiveMongoRepository.findByFollowedId(id).map(followerPersistenceMapper::toFollower);
+    }
+
+    @Override
+    public Mono<Void> delete(String id) {
+        return followerReactiveMongoRepository.deleteById(id);
+    }
 }
