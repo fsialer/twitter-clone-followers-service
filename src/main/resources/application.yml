@@ -1,0 +1,10 @@
+server:
+  port: 8084
+spring:
+  application:
+    name: twitter-clone-followers-service
+  jackson:
+    default-property-inclusion: NON_NULL
+  data:
+    mongodb:
+      uri: ${DB_URL:mongodb://localhost:27017/tc_followers_db}
