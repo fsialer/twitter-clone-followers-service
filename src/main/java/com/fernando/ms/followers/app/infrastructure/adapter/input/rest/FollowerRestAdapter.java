@@ -2,14 +2,16 @@ package com.fernando.ms.followers.app.infrastructure.adapter.input.rest;
 
 import com.fernando.ms.followers.app.application.ports.input.FollowerInputPort;
 import com.fernando.ms.followers.app.infrastructure.adapter.input.rest.mapper.FollowerRestMapper;
+import com.fernando.ms.followers.app.infrastructure.adapter.input.rest.models.request.CreateFollowerRequest;
+import com.fernando.ms.followers.app.infrastructure.adapter.input.rest.models.response.FollowerResponse;
 import com.fernando.ms.followers.app.infrastructure.adapter.input.rest.models.response.QuantityFollowerResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
+
+import java.net.URI;
 
 @RestController
 @RequiredArgsConstructor
@@ -23,6 +25,15 @@ public class FollowerRestAdapter {
         return  followerInputPort.quantityFollowers(followerId)
                 .flatMap(follower->{
                     return Mono.just(ResponseEntity.ok().body(followerRestMapper.toQuantityFollowerResponse(follower)));
+                });
+    }
+
+    @PostMapping
+    public Mono<ResponseEntity<FollowerResponse>> save(@Valid @RequestBody CreateFollowerRequest rq){
+        return followerInputPort.save(followerRestMapper.toFollower(rq))
+                .flatMap(follower -> {
+                    String location="/followers/".concat(follower.getId());
+                    return Mono.just(ResponseEntity.created(URI.create(location)).body(followerRestMapper.toFollowerResponse(follower)));
                 });
     }
 }

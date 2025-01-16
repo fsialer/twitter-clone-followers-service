@@ -13,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import static org.mockito.ArgumentMatchers.*;
@@ -45,5 +46,24 @@ public class FollowerPersistenceAdapterTest {
                 .verifyComplete();
         Mockito.verify(followerReactiveMongoRepository, times(1)).findAllByFollowerId(anyLong());
         Mockito.verify(followerPersistenceMapper, times(1)).toFollowers(any(Flux.class));
+    }
+
+    @Test
+    @DisplayName("When Save Follower Expect Follower Saved Successfully")
+    void when_SaveFollower_Expect_FollowerSavedSuccessfully() {
+        FollowerDocument followerDocument=TestUtilsFollower.buildFollowerDocumentMock();
+        Follower follower= TestUtilsFollower.buildFollowerMock();
+        when(followerPersistenceMapper.toFollowerDocument(any(Follower.class))).thenReturn(followerDocument);
+        when(followerReactiveMongoRepository.save(any(FollowerDocument.class))).thenReturn(Mono.just(followerDocument));
+        when(followerPersistenceMapper.toFollower(any(Mono.class))).thenReturn(Mono.just(follower));
+
+        Mono<Follower> result = followerPersistenceAdapter.save(follower);
+
+        StepVerifier.create(result)
+                .expectNext(follower)
+                .verifyComplete();
+        Mockito.verify(followerReactiveMongoRepository, times(1)).save(any(FollowerDocument.class));
+        Mockito.verify(followerPersistenceMapper, times(1)).toFollowerDocument(any(Follower.class));
+        Mockito.verify(followerPersistenceMapper, times(1)).toFollower(any(Mono.class));
     }
 }

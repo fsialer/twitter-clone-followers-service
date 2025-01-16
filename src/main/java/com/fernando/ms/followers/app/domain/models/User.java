@@ -7,8 +7,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class Follower {
-    private String id;
-    private User follower;
-    private User followed;
+public class User {
+    private Long id;
+    private String names;
 }

@@ -7,6 +7,8 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class QuantityFollowerResponse {
-    private Long quantity;
+public class FollowerResponse {
+    private String id;
+    private Long follower;
+    private Long followed;
 }

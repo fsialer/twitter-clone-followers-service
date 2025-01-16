@@ -14,8 +14,8 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
@@ -40,6 +40,21 @@ public class FollowerServiceTest {
                 .expectNext(1L)
                 .verifyComplete();
         Mockito.verify(followerPersistencePort, times(1)).findAllByFollowerId(anyLong());
+    }
+
+    @Test
+    @DisplayName("When Follower Information Is Correct Expect Followed Saved Successfully")
+    void when_FollowerInformationIsCorrect_Expect_FollowerSavedSuccessfully() {
+        Follower follower=TestUtilsFollower.buildFollowerMock();
+        when(followerPersistencePort.save(any(Follower.class))).thenReturn(Mono.just(follower));
+
+        Mono<Follower> result = followerService.save(follower);
+
+        StepVerifier.create(result)
+                .expectNext(follower)
+                .verifyComplete();
+
+        Mockito.verify(followerPersistencePort, times(1)).save(any(Follower.class));
     }
 
 }
