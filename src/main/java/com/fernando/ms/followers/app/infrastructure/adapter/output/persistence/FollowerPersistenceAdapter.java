@@ -47,4 +47,9 @@ public class FollowerPersistenceAdapter implements FollowerPersistencePort {
     public Mono<Boolean> existsByFollowerIdFollowedId(Long followerId, Long followedId) {
         return followerReactiveMongoRepository.existsByFollowerIdAndFollowedId(followerId,followedId);
     }
+
+    @Override
+    public Flux<Follower> findFollowersPaginated(Long followerId, Long page, Long size) {
+        return followerPersistenceMapper.toFollowers(followerReactiveMongoRepository.findFollowersPaginated(followerId,page,size));
+    }
 }

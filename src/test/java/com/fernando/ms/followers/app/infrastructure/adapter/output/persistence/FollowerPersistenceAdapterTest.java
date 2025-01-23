@@ -37,7 +37,7 @@ public class FollowerPersistenceAdapterTest {
     void When_FollowerIsCorrect_Expect_AListFollowedExists() {
         Follower follower= TestUtilsFollower.buildFollowerMock();
         FollowerDocument followerDocument=TestUtilsFollower.buildFollowerDocumentMock();
-        when(followerReactiveMongoRepository.findAllByFollowerId(anyLong())).thenReturn(Flux.just(followerDocument));
+        when(followerReactiveMongoRepository.findAllByFollowedId(anyLong())).thenReturn(Flux.just(followerDocument));
         when(followerPersistenceMapper.toFollowers(any(Flux.class))).thenReturn(Flux.just(follower));
 
         Flux<Follower> result = followerPersistenceAdapter.findFollowers(1L);
@@ -45,7 +45,7 @@ public class FollowerPersistenceAdapterTest {
         StepVerifier.create(result)
                 .expectNext(follower)
                 .verifyComplete();
-        Mockito.verify(followerReactiveMongoRepository, times(1)).findAllByFollowerId(anyLong());
+        Mockito.verify(followerReactiveMongoRepository, times(1)).findAllByFollowedId(anyLong());
         Mockito.verify(followerPersistenceMapper, times(1)).toFollowers(any(Flux.class));
     }
 
@@ -114,5 +114,27 @@ public class FollowerPersistenceAdapterTest {
                 .verifyComplete();
 
         Mockito.verify(followerReactiveMongoRepository, times(1)).existsByFollowerIdAndFollowedId(followerId, followedId);
+    }
+
+    @Test
+    @DisplayName("When findFollowersPaginated is called with valid followerId, page, and size, expect a list of followers")
+    void When_FindFollowersPaginatedIsCalledWithValidParams_Expect_ListOfFollowers() {
+        Long followerId = 1L;
+        Long page = 0L;
+        Long size = 10L;
+        Follower follower = TestUtilsFollower.buildFollowerMock();
+        FollowerDocument followerDocument = TestUtilsFollower.buildFollowerDocumentMock();
+
+        when(followerReactiveMongoRepository.findFollowersPaginated(followerId, page, size)).thenReturn(Flux.just(followerDocument));
+        when(followerPersistenceMapper.toFollowers(any(Flux.class))).thenReturn(Flux.just(follower));
+
+        Flux<Follower> result = followerPersistenceAdapter.findFollowersPaginated(followerId, page, size);
+
+        StepVerifier.create(result)
+                .expectNext(follower)
+                .verifyComplete();
+
+        Mockito.verify(followerReactiveMongoRepository, times(1)).findFollowersPaginated(followerId, page, size);
+        Mockito.verify(followerPersistenceMapper, times(1)).toFollowers(any(Flux.class));
     }
 }

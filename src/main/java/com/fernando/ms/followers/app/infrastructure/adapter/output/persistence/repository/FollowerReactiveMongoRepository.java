@@ -5,7 +5,7 @@ import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-public interface FollowerReactiveMongoRepository extends ReactiveMongoRepository<FollowerDocument,String> {
+public interface FollowerReactiveMongoRepository extends ReactiveMongoRepository<FollowerDocument,String> ,FollowerReactiveMongoRepositoryCustom{
     Flux<FollowerDocument> findAllByFollowedId(Long followerId);
     Mono<FollowerDocument> findByFollowedId(String followed);
     Mono<Boolean> existsByFollowerIdAndFollowedId(Long followerId, Long followedId);

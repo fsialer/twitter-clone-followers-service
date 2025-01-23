@@ -1,12 +1,14 @@
 package com.fernando.ms.followers.app.application.services;
 
 import com.fernando.ms.followers.app.Utils.TestUtilsFollower;
+import com.fernando.ms.followers.app.Utils.TestUtilsUser;
 import com.fernando.ms.followers.app.application.ports.output.ExternalUserOutputPort;
 import com.fernando.ms.followers.app.application.ports.output.FollowerPersistencePort;
 import com.fernando.ms.followers.app.domain.exception.FollowedNotFoundException;
 import com.fernando.ms.followers.app.domain.exception.FollowerNotFoundException;
 import com.fernando.ms.followers.app.domain.exception.FollowerRuleException;
 import com.fernando.ms.followers.app.domain.models.Follower;
+import com.fernando.ms.followers.app.domain.models.User;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,6 +19,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+
+import java.util.Collections;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -37,7 +41,7 @@ public class FollowerServiceTest {
     @Test
     @DisplayName("When followerId And TargetType Are Correct Expect Quantity Followers Exists")
     void When_TargetIDAndTargetTypeAreCorrect_Expect_QuantityLikeExists() {
-        Follower follower= TestUtilsFollower.buildFollowerMock();
+        Follower follower = TestUtilsFollower.buildFollowerMock();
 
         when(followerPersistencePort.findFollowers(anyLong())).thenReturn(Flux.just(follower));
 
@@ -185,4 +189,25 @@ public class FollowerServiceTest {
         Mockito.verify(followerPersistencePort, times(0)).delete(anyString());
     }
 
+    @Test
+    @DisplayName("When findFollowersPaginated is called with valid followerId, page, and size, expect a list of users")
+    void When_FindFollowersPaginatedIsCalledWithValidParams_Expect_ListOfUsers() {
+        Long followerId = 1L;
+        Long page = 0L;
+        Long size = 10L;
+        Follower follower = TestUtilsFollower.buildFollowerMock();
+        User user = TestUtilsUser.buildUserMock();
+
+        when(followerPersistencePort.findFollowersPaginated(followerId, page, size)).thenReturn(Flux.just(follower));
+        when(externalUserOutputPort.findByIds(Collections.singletonList(follower.getFollower().getId()))).thenReturn(Flux.just(user));
+
+        Flux<User> result = followerService.findFollowersPaginated(followerId, page, size);
+
+        StepVerifier.create(result)
+                .expectNext(user)
+                .verifyComplete();
+
+        Mockito.verify(followerPersistencePort, times(1)).findFollowersPaginated(followerId, page, size);
+        Mockito.verify(externalUserOutputPort, times(1)).findByIds(Collections.singletonList(follower.getFollower().getId()));
+    }
 }

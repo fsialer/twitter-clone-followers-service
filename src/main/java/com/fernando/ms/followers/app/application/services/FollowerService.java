@@ -7,10 +7,14 @@ import com.fernando.ms.followers.app.domain.exception.FollowedNotFoundException;
 import com.fernando.ms.followers.app.domain.exception.FollowerNotFoundException;
 import com.fernando.ms.followers.app.domain.exception.FollowerRuleException;
 import com.fernando.ms.followers.app.domain.models.Follower;
+import com.fernando.ms.followers.app.domain.models.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.Collections;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -55,5 +59,16 @@ public class FollowerService implements FollowerInputPort {
                 .switchIfEmpty(Mono.error(new FollowedNotFoundException()))
                 .single()
                 .flatMap(existFollowed -> followerPersistencePort.delete(existFollowed.getId()));
+    }
+
+    @Override
+    public Flux<User> findFollowersPaginated(Long followerId, Long page, Long size) {
+        return followerPersistencePort.findFollowersPaginated(followerId,page,size)
+                .flatMap(follower -> {
+                    return Flux.just(follower.getFollower().getId());
+                })
+                .flatMap(ids->{
+                    return externalUserOutputPort.findByIds(Collections.singletonList(ids));
+                });
     }
 }

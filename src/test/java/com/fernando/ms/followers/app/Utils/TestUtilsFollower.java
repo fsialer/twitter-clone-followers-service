@@ -3,6 +3,7 @@ package com.fernando.ms.followers.app.Utils;
 import com.fernando.ms.followers.app.domain.models.Follower;
 import com.fernando.ms.followers.app.domain.models.User;
 import com.fernando.ms.followers.app.infrastructure.adapter.input.rest.models.request.CreateFollowerRequest;
+import com.fernando.ms.followers.app.infrastructure.adapter.input.rest.models.response.FollowResponse;
 import com.fernando.ms.followers.app.infrastructure.adapter.input.rest.models.response.FollowerResponse;
 import com.fernando.ms.followers.app.infrastructure.adapter.input.rest.models.response.QuantityFollowerResponse;
 import com.fernando.ms.followers.app.infrastructure.adapter.output.persistence.models.FollowerDocument;
@@ -34,8 +35,8 @@ public class TestUtilsFollower {
                 .build();
     }
 
-    public static FollowerResponse buildFollowerResponseMock(){
-        return FollowerResponse.builder()
+    public static FollowResponse buildFollowResponseMock(){
+        return FollowResponse.builder()
                 .id("67894256c864356454574770")
                 .followed(1L)
                 .follower(2L)
@@ -46,6 +47,13 @@ public class TestUtilsFollower {
         return CreateFollowerRequest.builder()
                 .followedId(1L)
                 .followerId(2L)
+                .build();
+    }
+
+    public static FollowerResponse buildFollowerResponseMock(){
+        return FollowerResponse.builder()
+                .id(1L)
+                .names("Fernando")
                 .build();
     }
 }

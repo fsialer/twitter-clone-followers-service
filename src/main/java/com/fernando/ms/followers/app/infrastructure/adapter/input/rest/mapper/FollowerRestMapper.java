@@ -3,10 +3,12 @@ package com.fernando.ms.followers.app.infrastructure.adapter.input.rest.mapper;
 import com.fernando.ms.followers.app.domain.models.Follower;
 import com.fernando.ms.followers.app.domain.models.User;
 import com.fernando.ms.followers.app.infrastructure.adapter.input.rest.models.request.CreateFollowerRequest;
+import com.fernando.ms.followers.app.infrastructure.adapter.input.rest.models.response.FollowResponse;
 import com.fernando.ms.followers.app.infrastructure.adapter.input.rest.models.response.FollowerResponse;
 import com.fernando.ms.followers.app.infrastructure.adapter.input.rest.models.response.QuantityFollowerResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import reactor.core.publisher.Flux;
 
 @Mapper(componentModel = "spring")
 public interface FollowerRestMapper {
@@ -33,7 +35,7 @@ public interface FollowerRestMapper {
 
     @Mapping(target = "follower",expression = "java(mapFollowerId(follower))")
     @Mapping(target = "followed",expression = "java(mapFollowedId(follower))")
-    FollowerResponse toFollowerResponse(Follower follower);
+    FollowResponse toFollowResponse(Follower follower);
 
     default Long mapFollowedId(Follower follower){
         return follower.getFollowed().getId();
@@ -42,4 +44,10 @@ public interface FollowerRestMapper {
     default Long mapFollowerId(Follower follower){
         return follower.getFollower().getId();
     }
+
+    default Flux<FollowerResponse> toFollowersResponse(Flux<User> users){
+        return users.map(this::toFollowerResponse);
+    }
+    FollowerResponse toFollowerResponse(User user);
+
 }
