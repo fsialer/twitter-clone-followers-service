@@ -21,7 +21,7 @@ public class FollowerPersistenceAdapter implements FollowerPersistencePort {
 
     @Override
     public Flux<Follower> findFollowers(Long followerId) {
-        return followerPersistenceMapper.toFollowers(followerReactiveMongoRepository.findAllByFollowerId(followerId));
+        return followerPersistenceMapper.toFollowers(followerReactiveMongoRepository.findAllByFollowedId(followerId));
     }
 
     @Override
