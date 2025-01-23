@@ -40,7 +40,7 @@ public class FollowerPersistenceAdapterTest {
         when(followerReactiveMongoRepository.findAllByFollowerId(anyLong())).thenReturn(Flux.just(followerDocument));
         when(followerPersistenceMapper.toFollowers(any(Flux.class))).thenReturn(Flux.just(follower));
 
-        Flux<Follower> result = followerPersistenceAdapter.findAllByFollowerId(1L);
+        Flux<Follower> result = followerPersistenceAdapter.findFollowers(1L);
 
         StepVerifier.create(result)
                 .expectNext(follower)
@@ -80,5 +80,39 @@ public class FollowerPersistenceAdapterTest {
                 .verifyComplete();
 
         Mockito.verify(followerReactiveMongoRepository, times(1)).deleteById(anyString());
+    }
+
+    @Test
+    @DisplayName("When existsByFollowerIdFollowedId is called with valid followerId and followedId, expect true")
+    void when_ExistsByFollowerIdFollowedIdIsCalledWithValidIds_Expect_True() {
+        Long followerId = 1L;
+        Long followedId = 2L;
+
+        when(followerReactiveMongoRepository.existsByFollowerIdAndFollowedId(followerId, followedId)).thenReturn(Mono.just(true));
+
+        Mono<Boolean> result = followerPersistenceAdapter.existsByFollowerIdFollowedId(followerId, followedId);
+
+        StepVerifier.create(result)
+                .expectNext(true)
+                .verifyComplete();
+
+        Mockito.verify(followerReactiveMongoRepository, times(1)).existsByFollowerIdAndFollowedId(followerId, followedId);
+    }
+
+    @Test
+    @DisplayName("When existsByFollowerIdFollowedId is called with invalid followerId and followedId, expect false")
+    void when_ExistsByFollowerIdFollowedIdIsCalledWithInvalidIds_Expect_False() {
+        Long followerId = 1L;
+        Long followedId = 2L;
+
+        when(followerReactiveMongoRepository.existsByFollowerIdAndFollowedId(followerId, followedId)).thenReturn(Mono.just(false));
+
+        Mono<Boolean> result = followerPersistenceAdapter.existsByFollowerIdFollowedId(followerId, followedId);
+
+        StepVerifier.create(result)
+                .expectNext(false)
+                .verifyComplete();
+
+        Mockito.verify(followerReactiveMongoRepository, times(1)).existsByFollowerIdAndFollowedId(followerId, followedId);
     }
 }

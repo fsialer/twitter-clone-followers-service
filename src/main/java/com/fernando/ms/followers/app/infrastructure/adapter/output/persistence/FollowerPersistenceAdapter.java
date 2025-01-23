@@ -20,7 +20,7 @@ public class FollowerPersistenceAdapter implements FollowerPersistencePort {
     private final FollowerPersistenceMapper followerPersistenceMapper;
 
     @Override
-    public Flux<Follower> findAllByFollowerId(Long followerId) {
+    public Flux<Follower> findFollowers(Long followerId) {
         return followerPersistenceMapper.toFollowers(followerReactiveMongoRepository.findAllByFollowerId(followerId));
     }
 
@@ -41,5 +41,10 @@ public class FollowerPersistenceAdapter implements FollowerPersistencePort {
     @Override
     public Mono<Void> delete(String id) {
         return followerReactiveMongoRepository.deleteById(id);
+    }
+
+    @Override
+    public Mono<Boolean> existsByFollowerIdFollowedId(Long followerId, Long followedId) {
+        return followerReactiveMongoRepository.existsByFollowerIdAndFollowedId(followerId,followedId);
     }
 }

@@ -8,4 +8,5 @@ import reactor.core.publisher.Mono;
 public interface FollowerReactiveMongoRepository extends ReactiveMongoRepository<FollowerDocument,String> {
     Flux<FollowerDocument> findAllByFollowerId(Long followerId);
     Mono<FollowerDocument> findByFollowedId(String followed);
+    Mono<Boolean> existsByFollowerIdAndFollowedId(Long followerId, Long followedId);
 }

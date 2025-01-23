@@ -2,6 +2,7 @@ package com.fernando.ms.followers.app.infrastructure.adapter.input.rest;
 
 import com.fernando.ms.followers.app.domain.exception.FollowedNotFoundException;
 import com.fernando.ms.followers.app.domain.exception.FollowerNotFoundException;
+import com.fernando.ms.followers.app.domain.exception.FollowerRuleException;
 import com.fernando.ms.followers.app.infrastructure.adapter.input.rest.models.response.ErrorResponse;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
@@ -59,6 +60,19 @@ public class GlobalControllerAdvice {
                 .code(FOLLOWED_NOT_FOUND.getCode())
                 .type(FUNCTIONAL)
                 .message(FOLLOWED_NOT_FOUND.getMessage())
+                .timestamp(LocalDate.now().toString())
+                .build());
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(FollowerRuleException.class)
+    public Mono<ErrorResponse> handleFollowerRuleException(
+            FollowerRuleException e) {
+        return Mono.just(ErrorResponse.builder()
+                .code(FOLLOWER_RULE.getCode())
+                .type(FUNCTIONAL)
+                .message(FOLLOWER_RULE.getMessage())
+                        .details(Collections.singletonList(e.getMessage()))
                 .timestamp(LocalDate.now().toString())
                 .build());
     }

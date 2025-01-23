@@ -1,9 +1,11 @@
 package com.fernando.ms.followers.app.application.services;
 
 import com.fernando.ms.followers.app.Utils.TestUtilsFollower;
+import com.fernando.ms.followers.app.application.ports.output.ExternalUserOutputPort;
 import com.fernando.ms.followers.app.application.ports.output.FollowerPersistencePort;
 import com.fernando.ms.followers.app.domain.exception.FollowedNotFoundException;
 import com.fernando.ms.followers.app.domain.exception.FollowerNotFoundException;
+import com.fernando.ms.followers.app.domain.exception.FollowerRuleException;
 import com.fernando.ms.followers.app.domain.models.Follower;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -26,6 +28,9 @@ public class FollowerServiceTest {
     @Mock
     private FollowerPersistencePort followerPersistencePort;
 
+    @Mock
+    private ExternalUserOutputPort externalUserOutputPort;
+
     @InjectMocks
     private FollowerService followerService;
 
@@ -34,20 +39,23 @@ public class FollowerServiceTest {
     void When_TargetIDAndTargetTypeAreCorrect_Expect_QuantityLikeExists() {
         Follower follower= TestUtilsFollower.buildFollowerMock();
 
-        when(followerPersistencePort.findAllByFollowerId(anyLong())).thenReturn(Flux.just(follower));
+        when(followerPersistencePort.findFollowers(anyLong())).thenReturn(Flux.just(follower));
 
         Mono<Long> result = followerService.quantityFollowers(1L);
 
         StepVerifier.create(result)
                 .expectNext(1L)
                 .verifyComplete();
-        Mockito.verify(followerPersistencePort, times(1)).findAllByFollowerId(anyLong());
+        Mockito.verify(followerPersistencePort, times(1)).findFollowers(anyLong());
     }
 
     @Test
-    @DisplayName("When Follower Information Is Correct Expect Followed Saved Successfully")
+    @DisplayName("When follower information is correct, expect follower to be saved successfully")
     void when_FollowerInformationIsCorrect_Expect_FollowerSavedSuccessfully() {
-        Follower follower=TestUtilsFollower.buildFollowerMock();
+        Follower follower = TestUtilsFollower.buildFollowerMock();
+
+        when(followerPersistencePort.existsByFollowerIdFollowedId(anyLong(), anyLong())).thenReturn(Mono.just(false));
+        when(externalUserOutputPort.verify(anyLong())).thenReturn(Mono.just(true));
         when(followerPersistencePort.save(any(Follower.class))).thenReturn(Mono.just(follower));
 
         Mono<Follower> result = followerService.save(follower);
@@ -56,7 +64,67 @@ public class FollowerServiceTest {
                 .expectNext(follower)
                 .verifyComplete();
 
+        Mockito.verify(followerPersistencePort, times(1)).existsByFollowerIdFollowedId(anyLong(), anyLong());
+        Mockito.verify(externalUserOutputPort, times(2)).verify(anyLong());
         Mockito.verify(followerPersistencePort, times(1)).save(any(Follower.class));
+    }
+
+    @Test
+    @DisplayName("When follower already exists, expect FollowerRuleException")
+    void when_FollowerAlreadyExists_Expect_FollowerRuleException() {
+        Follower follower = TestUtilsFollower.buildFollowerMock();
+
+        when(followerPersistencePort.existsByFollowerIdFollowedId(anyLong(), anyLong())).thenReturn(Mono.just(true));
+
+        Mono<Follower> result = followerService.save(follower);
+
+        StepVerifier.create(result)
+                .expectError(FollowerRuleException.class)
+                .verify();
+
+        Mockito.verify(followerPersistencePort, times(1)).existsByFollowerIdFollowedId(anyLong(), anyLong());
+        Mockito.verify(externalUserOutputPort, times(0)).verify(anyLong());
+        Mockito.verify(followerPersistencePort, times(0)).save(any(Follower.class));
+    }
+
+    @Test
+    @DisplayName("When follower does not exist, expect FollowerNotFoundException")
+    void when_FollowerDoesNotExist_Expect_FollowerNotFoundException() {
+        Follower follower = TestUtilsFollower.buildFollowerMock();
+
+        when(followerPersistencePort.existsByFollowerIdFollowedId(anyLong(), anyLong())).thenReturn(Mono.just(false));
+        when(externalUserOutputPort.verify(follower.getFollower().getId())).thenReturn(Mono.just(false));
+
+        Mono<Follower> result = followerService.save(follower);
+
+        StepVerifier.create(result)
+                .expectError(FollowerNotFoundException.class)
+                .verify();
+
+        Mockito.verify(followerPersistencePort, times(1)).existsByFollowerIdFollowedId(anyLong(), anyLong());
+        Mockito.verify(externalUserOutputPort, times(1)).verify(follower.getFollower().getId());
+        Mockito.verify(followerPersistencePort, times(0)).save(any(Follower.class));
+    }
+
+    @Test
+    @DisplayName("When followed does not exist, expect FollowedNotFoundException")
+    void when_FollowedDoesNotExist_Expect_FollowedNotFoundException() {
+        Follower follower = TestUtilsFollower.buildFollowerMock();
+
+        when(followerPersistencePort.existsByFollowerIdFollowedId(anyLong(), anyLong())).thenReturn(Mono.just(false));
+        when(externalUserOutputPort.verify(follower.getFollower().getId())).thenReturn(Mono.just(true));
+        when(externalUserOutputPort.verify(follower.getFollowed().getId())).thenReturn(Mono.just(false));
+
+        Mono<Follower> result = followerService.save(follower);
+
+        StepVerifier.create(result)
+                .expectError(FollowedNotFoundException.class)
+                .verify();
+
+        Mockito.verify(followerPersistencePort, times(1)).existsByFollowerIdFollowedId(anyLong(), anyLong());
+        Mockito.verify(externalUserOutputPort, times(1)).verify(follower.getFollower().getId());
+        Mockito.verify(externalUserOutputPort, times(1)).verify(follower.getFollowed().getId());
+        Mockito.verify(followerPersistencePort, times(0)).save(any(Follower.class));
     }
 
     @Test
@@ -67,7 +135,7 @@ public class FollowerServiceTest {
         Follower follower = TestUtilsFollower.buildFollowerMock();
         follower.getFollowed().setId(followedId);
 
-        when(followerPersistencePort.findAllByFollowerId(anyLong())).thenReturn(Flux.just(follower));
+        when(followerPersistencePort.findFollowers(anyLong())).thenReturn(Flux.just(follower));
         when(followerPersistencePort.delete(anyString())).thenReturn(Mono.empty());
 
         Mono<Void> result = followerService.unfollow(followerId, followedId);
@@ -75,7 +143,7 @@ public class FollowerServiceTest {
         StepVerifier.create(result)
                 .verifyComplete();
 
-        Mockito.verify(followerPersistencePort, times(1)).findAllByFollowerId(anyLong());
+        Mockito.verify(followerPersistencePort, times(1)).findFollowers(anyLong());
         Mockito.verify(followerPersistencePort, times(1)).delete(anyString());
     }
 
@@ -85,7 +153,7 @@ public class FollowerServiceTest {
         Long followerId = 1L;
         Long followedId = 2L;
 
-        when(followerPersistencePort.findAllByFollowerId(anyLong())).thenReturn(Flux.empty());
+        when(followerPersistencePort.findFollowers(anyLong())).thenReturn(Flux.empty());
 
         Mono<Void> result = followerService.unfollow(followerId, followedId);
 
@@ -93,7 +161,7 @@ public class FollowerServiceTest {
                 .expectError(FollowerNotFoundException.class)
                 .verify();
 
-        Mockito.verify(followerPersistencePort, times(1)).findAllByFollowerId(anyLong());
+        Mockito.verify(followerPersistencePort, times(1)).findFollowers(anyLong());
         Mockito.verify(followerPersistencePort, times(0)).delete(anyString());
     }
 
@@ -105,7 +173,7 @@ public class FollowerServiceTest {
         Follower follower = TestUtilsFollower.buildFollowerMock();
         follower.getFollowed().setId(3L); // Different followedId
 
-        when(followerPersistencePort.findAllByFollowerId(anyLong())).thenReturn(Flux.just(follower));
+        when(followerPersistencePort.findFollowers(anyLong())).thenReturn(Flux.just(follower));
 
         Mono<Void> result = followerService.unfollow(followerId, followedId);
 
@@ -113,7 +181,7 @@ public class FollowerServiceTest {
                 .expectError(FollowedNotFoundException.class)
                 .verify();
 
-        Mockito.verify(followerPersistencePort, times(1)).findAllByFollowerId(anyLong());
+        Mockito.verify(followerPersistencePort, times(1)).findFollowers(anyLong());
         Mockito.verify(followerPersistencePort, times(0)).delete(anyString());
     }
 

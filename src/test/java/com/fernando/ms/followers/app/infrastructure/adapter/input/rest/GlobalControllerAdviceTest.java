@@ -6,6 +6,7 @@ import com.fernando.ms.followers.app.Utils.TestUtilsFollower;
 import com.fernando.ms.followers.app.application.ports.input.FollowerInputPort;
 import com.fernando.ms.followers.app.domain.exception.FollowedNotFoundException;
 import com.fernando.ms.followers.app.domain.exception.FollowerNotFoundException;
+import com.fernando.ms.followers.app.domain.exception.FollowerRuleException;
 import com.fernando.ms.followers.app.infrastructure.adapter.input.rest.mapper.FollowerRestMapper;
 import com.fernando.ms.followers.app.infrastructure.adapter.input.rest.models.request.CreateFollowerRequest;
 import com.fernando.ms.followers.app.infrastructure.adapter.input.rest.models.response.ErrorResponse;
@@ -123,6 +124,28 @@ public class GlobalControllerAdviceTest {
                     assert response.getCode().equals(FOLLOWED_NOT_FOUND.getCode());
                     assert response.getType().equals(FUNCTIONAL);
                     assert response.getMessage().equals(FOLLOWED_NOT_FOUND.getMessage());
+                });
+    }
+
+    @Test
+    @DisplayName("Expect FollowerRuleException When Follower Already Exists")
+    void Expect_FollowerRuleException_When_Follower_Already_Exists() throws JsonProcessingException {
+        CreateFollowerRequest createFollowerRequest= TestUtilsFollower.buildCreateFollowerRequestMock();
+        when(followerRestMapper.toFollower(any(CreateFollowerRequest.class))).thenReturn(TestUtilsFollower.buildFollowerMock());
+        when(followerInputPort.save(any())).thenReturn(Mono.error(new FollowerRuleException("You are follower this user")));
+
+        webTestClient.post()
+                .uri("/followers")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(objectMapper.writeValueAsString(createFollowerRequest))
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody(ErrorResponse.class)
+                .value(response -> {
+                    assert response.getCode().equals(FOLLOWER_RULE.getCode());
+                    assert response.getType().equals(FUNCTIONAL);
+                    assert response.getMessage().equals(FOLLOWER_RULE.getMessage());
+                    assert response.getDetails().contains("You are follower this user");
                 });
     }
 
