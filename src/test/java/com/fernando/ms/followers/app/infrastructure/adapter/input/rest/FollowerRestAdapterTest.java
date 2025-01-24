@@ -130,5 +130,26 @@ public class FollowerRestAdapterTest {
         Mockito.verify(followerRestMapper, times(1)).toFollowersResponse(any(Flux.class));
     }
 
+    @Test
+    @DisplayName("When findAllFollowedByFollower is called with valid followerId, expect a list of follow responses")
+    void when_FindAllFollowedByFollowerIsCalledWithValidFollowerId_Expect_ListOfFollowResponses() {
+        Long followerId = 1L;
+        FollowResponse followResponse = TestUtilsFollower.buildFollowResponseMock();
+
+        when(followerInputPort.findAllFollowedByFollower(followerId)).thenReturn(Flux.just(TestUtilsFollower.buildFollowerMock()));
+        when(followerRestMapper.toFollowsResponse(any(Flux.class))).thenReturn(Flux.just(followResponse));
+
+        webTestClient.get()
+                .uri("/followers/find-followed-by-follower/{followerId}", followerId)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(FollowResponse.class)
+                .hasSize(1)
+                .contains(followResponse);
+
+        Mockito.verify(followerInputPort, times(1)).findAllFollowedByFollower(followerId);
+        Mockito.verify(followerRestMapper, times(1)).toFollowsResponse(any(Flux.class));
+    }
+
 
 }

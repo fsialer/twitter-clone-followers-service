@@ -9,4 +9,5 @@ import java.util.List;
 public interface ExternalUserOutputPort {
     Mono<Boolean> verify(Long id);
     Flux<User> findByIds(List<Long> ids);
+    Mono<User> findById(Long id);
 }

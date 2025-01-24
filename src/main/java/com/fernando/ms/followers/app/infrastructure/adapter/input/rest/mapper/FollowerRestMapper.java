@@ -50,4 +50,8 @@ public interface FollowerRestMapper {
     }
     FollowerResponse toFollowerResponse(User user);
 
+    default Flux<FollowResponse> toFollowsResponse(Flux<Follower> followers){
+        return followers.map(this::toFollowResponse);
+    }
+
 }

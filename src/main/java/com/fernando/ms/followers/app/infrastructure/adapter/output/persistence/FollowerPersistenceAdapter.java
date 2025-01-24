@@ -2,6 +2,7 @@ package com.fernando.ms.followers.app.infrastructure.adapter.output.persistence;
 
 import com.fernando.ms.followers.app.application.ports.output.FollowerPersistencePort;
 import com.fernando.ms.followers.app.domain.models.Follower;
+import com.fernando.ms.followers.app.domain.models.User;
 import com.fernando.ms.followers.app.infrastructure.adapter.output.persistence.mapper.FollowerPersistenceMapper;
 import com.fernando.ms.followers.app.infrastructure.adapter.output.persistence.models.FollowerDocument;
 import com.fernando.ms.followers.app.infrastructure.adapter.output.persistence.repository.FollowerReactiveMongoRepository;
@@ -34,7 +35,7 @@ public class FollowerPersistenceAdapter implements FollowerPersistencePort {
     }
 
     @Override
-    public Mono<Follower> findByFollowedId(String id) {
+    public Mono<Follower> findFollowedById(Long id) {
         return followerReactiveMongoRepository.findByFollowedId(id).map(followerPersistenceMapper::toFollower);
     }
 
@@ -51,5 +52,10 @@ public class FollowerPersistenceAdapter implements FollowerPersistencePort {
     @Override
     public Flux<Follower> findFollowersPaginated(Long followerId, Long page, Long size) {
         return followerPersistenceMapper.toFollowers(followerReactiveMongoRepository.findFollowersPaginated(followerId,page,size));
+    }
+
+    @Override
+    public Flux<Follower> findAllFollowedByFollowerPaginated(Long followerId) {
+        return followerPersistenceMapper.toFollowers(followerReactiveMongoRepository.findAllByFollowerId(followerId));
     }
 }

@@ -43,5 +43,17 @@ public class UserRestClientAdapter implements ExternalUserOutputPort {
                 });
     }
 
+    @Override
+    public Mono<User> findById(Long id) {
+        return webClientUser
+                .get()
+                .uri("users/{id}",id)
+                .retrieve()
+                .bodyToMono(UserResponse.class)
+                .flatMap(user->{
+                    return Mono.just(userRestClientMapper.toUser(user));
+                });
+    }
+
 
 }

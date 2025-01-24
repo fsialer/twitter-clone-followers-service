@@ -71,4 +71,9 @@ public class FollowerService implements FollowerInputPort {
                     return externalUserOutputPort.findByIds(Collections.singletonList(ids));
                 });
     }
+
+    @Override
+    public Flux<Follower> findAllFollowedByFollower(Long followedId) {
+        return followerPersistencePort.findAllFollowedByFollowerPaginated(followedId);
+    }
 }

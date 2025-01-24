@@ -53,5 +53,10 @@ public class FollowerRestAdapter {
         return followerRestMapper.toFollowersResponse(followerInputPort.findFollowersPaginated(followerId,page,size));
     }
 
+    @GetMapping("/find-followed-by-follower/{followerId}")
+    public Flux<FollowResponse> findAllFollowedByFollower(@PathVariable("followerId") Long followerId){
+        return followerRestMapper.toFollowsResponse(followerInputPort.findAllFollowedByFollower(followerId));
+    }
+
 
 }

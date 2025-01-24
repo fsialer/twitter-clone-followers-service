@@ -210,4 +210,21 @@ public class FollowerServiceTest {
         Mockito.verify(followerPersistencePort, times(1)).findFollowersPaginated(followerId, page, size);
         Mockito.verify(externalUserOutputPort, times(1)).findByIds(Collections.singletonList(follower.getFollower().getId()));
     }
+
+    @Test
+    @DisplayName("When findAllFollowedByFollower is called with valid followedId, expect a list of followers")
+    void when_FindAllFollowedByFollowerIsCalledWithValidFollowedId_Expect_ListOfFollowers() {
+        Long followedId = 1L;
+        Follower follower = TestUtilsFollower.buildFollowerMock();
+
+        when(followerPersistencePort.findAllFollowedByFollowerPaginated(followedId)).thenReturn(Flux.just(follower));
+
+        Flux<Follower> result = followerService.findAllFollowedByFollower(followedId);
+
+        StepVerifier.create(result)
+                .expectNext(follower)
+                .verifyComplete();
+
+        Mockito.verify(followerPersistencePort, times(1)).findAllFollowedByFollowerPaginated(followedId);
+    }
 }
