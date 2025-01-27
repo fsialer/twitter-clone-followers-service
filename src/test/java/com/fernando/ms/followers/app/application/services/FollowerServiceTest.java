@@ -23,7 +23,6 @@ import reactor.test.StepVerifier;
 import java.util.Collections;
 
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
@@ -226,5 +225,25 @@ public class FollowerServiceTest {
                 .verifyComplete();
 
         Mockito.verify(followerPersistencePort, times(1)).findAllFollowedByFollowerPaginated(followedId);
+    }
+
+    @Test
+    @DisplayName("When follower identifier is valid, expect a list of users")
+    void when_FollowerIdentifierIsValid_Expect_AListOfUsers() {
+        Long followerId = 1L;
+        Follower follower = TestUtilsFollower.buildFollowerMock();
+        User user = TestUtilsUser.buildUserMock();
+
+        when(followerPersistencePort.findFollowers(anyLong())).thenReturn(Flux.just(follower));
+        when(externalUserOutputPort.findByIds(anyList())).thenReturn(Flux.just(user));
+
+        Flux<User> result = followerService.findFollowers(followerId);
+
+        StepVerifier.create(result)
+                .expectNext(user)
+                .verifyComplete();
+
+        Mockito.verify(followerPersistencePort, times(1)).findFollowers(anyLong());
+        Mockito.verify(externalUserOutputPort, times(1)).findByIds(anyList());
     }
 }

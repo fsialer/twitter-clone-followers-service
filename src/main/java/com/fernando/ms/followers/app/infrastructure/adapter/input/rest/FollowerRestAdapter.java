@@ -46,7 +46,7 @@ public class FollowerRestAdapter {
         return followerInputPort.unfollow(followerId,followedId);
     }
 
-    @GetMapping("/{followerId}/followers")
+    @GetMapping("/{followerId}/paginated")
     public Flux<FollowerResponse> findFollowersPaginated(@PathVariable("followerId") Long followerId,
             @RequestParam(name = "size",required = false,defaultValue = "10") Long size,
             @RequestParam(name = "page",required = false,defaultValue = "0") Long page){
@@ -56,6 +56,11 @@ public class FollowerRestAdapter {
     @GetMapping("/find-followed-by-follower/{followerId}")
     public Flux<FollowResponse> findAllFollowedByFollower(@PathVariable("followerId") Long followerId){
         return followerRestMapper.toFollowsResponse(followerInputPort.findAllFollowedByFollower(followerId));
+    }
+
+    @GetMapping("/{followerId}")
+    public Flux<FollowerResponse> findFollowers(@PathVariable("followerId") Long followerId){
+        return followerRestMapper.toFollowersResponse(followerInputPort.findFollowers(followerId));
     }
 
 

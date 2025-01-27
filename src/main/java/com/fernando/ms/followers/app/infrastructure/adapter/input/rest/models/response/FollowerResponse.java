@@ -12,6 +12,7 @@ import java.util.Objects;
 public class FollowerResponse {
     private Long id;
     private String names;
+    private String email;
 
     @Override
     public boolean equals(Object o) {

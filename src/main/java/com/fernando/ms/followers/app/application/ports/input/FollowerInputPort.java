@@ -11,4 +11,5 @@ public interface FollowerInputPort {
     Mono<Void> unfollow(Long followerId,Long followedId);
     Flux<User> findFollowersPaginated(Long followerId, Long page, Long size);
     Flux<Follower> findAllFollowedByFollower(Long followedId);
+    Flux<User> findFollowers(Long followerId);
 }

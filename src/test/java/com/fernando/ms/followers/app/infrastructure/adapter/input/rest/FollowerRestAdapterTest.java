@@ -116,7 +116,7 @@ public class FollowerRestAdapterTest {
         when(followerRestMapper.toFollowersResponse(any(Flux.class))).thenReturn(Flux.just(followerResponse));
 
         webTestClient.get()
-                .uri(uriBuilder -> uriBuilder.path("/followers/{followerId}/followers")
+                .uri(uriBuilder -> uriBuilder.path("/followers/{followerId}/paginated")
                         .queryParam("page", page)
                         .queryParam("size", size)
                         .build(followerId))
@@ -149,6 +149,28 @@ public class FollowerRestAdapterTest {
 
         Mockito.verify(followerInputPort, times(1)).findAllFollowedByFollower(followerId);
         Mockito.verify(followerRestMapper, times(1)).toFollowsResponse(any(Flux.class));
+    }
+
+    @Test
+    @DisplayName("When Follower Id is valid, expect a list of followers")
+    void when_FollowerIdIsValid_Expect_AListOfFollowers() {
+        Long followerId = 1L;
+        FollowerResponse followerResponse = TestUtilsFollower.buildFollowerResponseMock();
+        User user=TestUtilsUser.buildUserMock();
+
+        when(followerInputPort.findFollowers(anyLong())).thenReturn(Flux.just(user));
+        when(followerRestMapper.toFollowersResponse(any(Flux.class))).thenReturn(Flux.just(followerResponse));
+
+        webTestClient.get()
+                .uri("/followers/{followerId}", followerId)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(FollowerResponse.class)
+                .hasSize(1)
+                .contains(followerResponse);
+
+        Mockito.verify(followerInputPort, times(1)).findFollowers(anyLong());
+        Mockito.verify(followerRestMapper, times(1)).toFollowersResponse(any(Flux.class));
     }
 
 
