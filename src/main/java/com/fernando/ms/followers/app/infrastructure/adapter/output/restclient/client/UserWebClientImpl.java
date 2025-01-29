@@ -20,7 +20,7 @@ public class UserWebClientImpl implements UserWebClient{
     public Mono<Boolean> verify(Long id) {
         return webClientUser
                 .get()
-                .uri("/users/{id}/verify",id)
+                .uri("/{id}/verify",id)
                 .retrieve()
                 .bodyToMono(ExistsUserResponse.class)
                 .flatMap(existsPostResponse -> {
@@ -32,7 +32,7 @@ public class UserWebClientImpl implements UserWebClient{
     public Flux<UserResponse> findByIds(List<Long> ids) {
         return webClientUser
                 .get()
-                .uri(uriBuilder -> uriBuilder.path("/users/find-by-ids").queryParam("ids", ids).build())
+                .uri(uriBuilder -> uriBuilder.path("/find-by-ids").queryParam("ids", ids).build())
                 .retrieve()
                 .bodyToFlux(UserResponse.class);
     }
@@ -41,7 +41,7 @@ public class UserWebClientImpl implements UserWebClient{
     public Mono<UserResponse> findById(Long id) {
         return webClientUser
                 .get()
-                .uri("/users/{id}",id)
+                .uri("/{id}",id)
                 .retrieve()
                 .bodyToMono(UserResponse.class);
     }
