@@ -40,10 +40,10 @@ public class FollowerRestAdapter {
                 });
     }
 
-    @DeleteMapping("/unfollow/{followerId}/follower/{followedId}/followed")
+    @DeleteMapping("/unfollow/{followedId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public Mono<Void> unfollow(@PathVariable("followerId") Long followerId,@PathVariable("followedId") Long followedId){
-        return followerInputPort.unfollow(followerId,followedId);
+    public Mono<Void> unfollow(@RequestHeader("X-User-Id") Long userId,@PathVariable("followedId") Long followedId){
+        return followerInputPort.unfollow(userId,followedId);
     }
 
     @GetMapping("/{followerId}/paginated")

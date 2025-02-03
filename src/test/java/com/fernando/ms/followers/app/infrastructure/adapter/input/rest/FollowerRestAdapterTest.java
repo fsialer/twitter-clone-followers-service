@@ -88,15 +88,16 @@ public class FollowerRestAdapterTest {
     }
 
     @Test
-    @DisplayName("When Unfollow Is Called With Valid FollowerId And FollowedId Expect No Content Status")
-    void when_UnfollowIsCalledWithValidFollowerIdAndFollowedId_Expect_NoContentStatus() {
+    @DisplayName("When Unfollow Is Valid FollowerId And FollowedId Expect No Content Status")
+    void when_UnfollowIsValidFollowerIdAndFollowedId_Expect_NoContentStatus() {
         Long followerId = 1L;
         Long followedId = 2L;
 
         when(followerInputPort.unfollow(anyLong(), anyLong())).thenReturn(Mono.empty());
 
         webTestClient.delete()
-                .uri("/followers/unfollow/{followerId}/follower/{followedId}/followed", followerId, followedId)
+                .uri("/followers/unfollow/{followedId}", followerId, followedId)
+                .header("X-User-Id","1")
                 .exchange()
                 .expectStatus().isNoContent();
 
