@@ -32,8 +32,8 @@ public class FollowerRestAdapter {
     }
 
     @PostMapping
-    public Mono<ResponseEntity<FollowResponse>> save(@Valid @RequestBody CreateFollowerRequest rq){
-        return followerInputPort.save(followerRestMapper.toFollower(rq))
+    public Mono<ResponseEntity<FollowResponse>> save(@RequestHeader("X-User-Id") Long userId,@Valid @RequestBody CreateFollowerRequest rq){
+        return followerInputPort.save(followerRestMapper.toFollower(userId,rq))
                 .flatMap(follower -> {
                     String location="/followers/".concat(follower.getId());
                     return Mono.just(ResponseEntity.created(URI.create(location)).body(followerRestMapper.toFollowResponse(follower)));

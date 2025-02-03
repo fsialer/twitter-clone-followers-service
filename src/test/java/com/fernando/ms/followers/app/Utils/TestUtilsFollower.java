@@ -46,7 +46,6 @@ public class TestUtilsFollower {
     public static CreateFollowerRequest buildCreateFollowerRequestMock(){
         return CreateFollowerRequest.builder()
                 .followedId(1L)
-                .followerId(2L)
                 .build();
     }
 

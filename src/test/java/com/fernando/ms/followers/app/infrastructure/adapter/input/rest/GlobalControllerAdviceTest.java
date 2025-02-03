@@ -49,7 +49,7 @@ public class GlobalControllerAdviceTest {
     void handleExceptionTest() throws JsonProcessingException {
         CreateFollowerRequest createFollowerRequest= TestUtilsFollower.buildCreateFollowerRequestMock();
         //createFollowerRequest.setFollowedId(null);
-        when(followerRestMapper.toFollower(any(CreateFollowerRequest.class))).thenReturn(TestUtilsFollower.buildFollowerMock());
+        when(followerRestMapper.toFollower(anyLong(),any(CreateFollowerRequest.class))).thenReturn(TestUtilsFollower.buildFollowerMock());
         when(followerInputPort.save(any())).thenReturn(Mono.error(new RuntimeException("Unexpected error")));
 
         webTestClient.post()
@@ -66,7 +66,7 @@ public class GlobalControllerAdviceTest {
                     assert response.getDetails().equals(Collections.singletonList("Unexpected error"));
                 });
         Mockito.verify(followerInputPort, times(1)).save(any());
-        Mockito.verify(followerRestMapper, times(1)).toFollower(any(CreateFollowerRequest.class));
+        Mockito.verify(followerRestMapper, times(1)).toFollower(anyLong(),any(CreateFollowerRequest.class));
         Mockito.verify(followerRestMapper, times(0)).toFollowerResponse(any());
     }
 
@@ -131,7 +131,7 @@ public class GlobalControllerAdviceTest {
     @DisplayName("Expect FollowerRuleException When Follower Already Exists")
     void Expect_FollowerRuleException_When_Follower_Already_Exists() throws JsonProcessingException {
         CreateFollowerRequest createFollowerRequest= TestUtilsFollower.buildCreateFollowerRequestMock();
-        when(followerRestMapper.toFollower(any(CreateFollowerRequest.class))).thenReturn(TestUtilsFollower.buildFollowerMock());
+        when(followerRestMapper.toFollower(anyLong(),any(CreateFollowerRequest.class))).thenReturn(TestUtilsFollower.buildFollowerMock());
         when(followerInputPort.save(any())).thenReturn(Mono.error(new FollowerRuleException("You are follower this user")));
 
         webTestClient.post()

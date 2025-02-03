@@ -9,8 +9,6 @@ import lombok.*;
 @NoArgsConstructor
 @Builder
 public class CreateFollowerRequest {
-    @NotNull(message = "Field followerId cannot be null")
-    private Long followerId;
     @NotNull(message = "Field followedId cannot be null")
     private Long followedId;
 }

@@ -70,7 +70,7 @@ public class FollowerRestAdapterTest {
         FollowResponse followResponse = TestUtilsFollower.buildFollowResponseMock();
 
         when(followerInputPort.save(any())).thenReturn(Mono.just(TestUtilsFollower.buildFollowerMock()));
-        when(followerRestMapper.toFollower(any(CreateFollowerRequest.class))).thenReturn(TestUtilsFollower.buildFollowerMock());
+        when(followerRestMapper.toFollower(anyLong(),any(CreateFollowerRequest.class))).thenReturn(TestUtilsFollower.buildFollowerMock());
         when(followerRestMapper.toFollowResponse(any(Follower.class))).thenReturn(followResponse);
 
         webTestClient.post()
@@ -83,7 +83,7 @@ public class FollowerRestAdapterTest {
                 .jsonPath("$.id").isEqualTo(followResponse.getId());
 
         Mockito.verify(followerInputPort, times(1)).save(any());
-        Mockito.verify(followerRestMapper, times(1)).toFollower(any(CreateFollowerRequest.class));
+        Mockito.verify(followerRestMapper, times(1)).toFollower(anyLong(),any(CreateFollowerRequest.class));
         Mockito.verify(followerRestMapper, times(1)).toFollowResponse(any(Follower.class));
     }
 

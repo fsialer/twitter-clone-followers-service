@@ -21,12 +21,12 @@ public interface FollowerRestMapper {
 
     QuantityFollowerResponse toQuantityFollowerResponse(Follower follower);
 
-    @Mapping(target = "follower",expression = "java(mapFollower(rq))")
+    @Mapping(target = "follower",expression = "java(mapFollower(userId))")
     @Mapping(target = "followed",expression = "java(mapFollowed(rq))")
-    Follower toFollower(CreateFollowerRequest rq);
+    Follower toFollower(Long userId,CreateFollowerRequest rq);
 
-    default User mapFollower(CreateFollowerRequest rq){
-        return User.builder().id(rq.getFollowerId()).build();
+    default User mapFollower(Long userId){
+        return User.builder().id(userId).build();
     }
 
     default User mapFollowed(CreateFollowerRequest rq){
