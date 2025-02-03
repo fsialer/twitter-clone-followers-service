@@ -118,10 +118,11 @@ public class FollowerRestAdapterTest {
         when(followerRestMapper.toFollowersResponse(any(Flux.class))).thenReturn(Flux.just(followerResponse));
 
         webTestClient.get()
-                .uri(uriBuilder -> uriBuilder.path("/followers/{followerId}/paginated")
+                .uri(uriBuilder -> uriBuilder.path("/followers/paginated")
                         .queryParam("page", page)
                         .queryParam("size", size)
-                        .build(followerId))
+                        .build())
+                .header("X-User-Id",followerId.toString())
                 .exchange()
                 .expectStatus().isOk()
                 .expectBodyList(FollowerResponse.class)
