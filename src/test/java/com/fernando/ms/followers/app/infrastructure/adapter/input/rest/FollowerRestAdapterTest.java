@@ -17,8 +17,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -34,10 +34,10 @@ public class FollowerRestAdapterTest {
     @Autowired
     private WebTestClient webTestClient;
 
-    @MockBean
+    @MockitoBean
     private FollowerInputPort followerInputPort;
 
-    @MockBean
+    @MockitoBean
     private FollowerRestMapper followerRestMapper;
 
     @Autowired
@@ -51,7 +51,8 @@ public class FollowerRestAdapterTest {
         when(followerRestMapper.toQuantityFollowerResponse(anyLong())).thenReturn(quantityFollowerResponse);
 
         webTestClient.get()
-                .uri("/followers/quantity/{followerId}/follower",1L)
+                .uri("/followers/quantity",1L)
+                .header("X-User-Id","1")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()

@@ -23,9 +23,9 @@ public class FollowerRestAdapter {
     private final FollowerInputPort followerInputPort;
     private final FollowerRestMapper followerRestMapper;
 
-    @GetMapping("/quantity/{followerId}/follower")
-    public Mono<ResponseEntity<QuantityFollowerResponse>> quantityFollowers(@PathVariable("followerId") Long followerId){
-        return  followerInputPort.quantityFollowers(followerId)
+    @GetMapping("/quantity")
+    public Mono<ResponseEntity<QuantityFollowerResponse>> quantityFollowers(@RequestHeader("X-User-Id") Long userId){
+        return  followerInputPort.quantityFollowers(userId)
                 .flatMap(follower->{
                     return Mono.just(ResponseEntity.ok().body(followerRestMapper.toQuantityFollowerResponse(follower)));
                 });
