@@ -8,5 +8,7 @@ spring:
   data:
     mongodb:
       uri: ${DB_URL:mongodb://localhost:27017/tc_followers_db}
+      username: ${DB_USERNAME:root}
+      password: ${DB_PASSWORD:1234}
 users-service:
   url: ${USER_URL:http://localhost:8080/users}

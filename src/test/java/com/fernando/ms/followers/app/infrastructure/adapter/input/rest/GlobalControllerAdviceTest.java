@@ -53,7 +53,7 @@ public class GlobalControllerAdviceTest {
         when(followerInputPort.save(any())).thenReturn(Mono.error(new RuntimeException("Unexpected error")));
 
         webTestClient.post()
-                .uri("/followers")
+                .uri("/v1/followers")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(objectMapper.writeValueAsString(createFollowerRequest))
                 .exchange()
@@ -77,7 +77,7 @@ public class GlobalControllerAdviceTest {
         createFollowerRequest.setFollowedId(null);
 
         webTestClient.post()
-                .uri("/followers")
+                .uri("/v1/followers")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(objectMapper.writeValueAsString(createFollowerRequest))
                 .exchange()
@@ -97,7 +97,7 @@ public class GlobalControllerAdviceTest {
         Long followedId = 2L;
         when(followerInputPort.unfollow(anyLong(),anyLong())).thenReturn(Mono.error(exception));
         webTestClient.delete()
-                .uri("/followers/unfollow/{followerId}/follower/{followedId}/followed", followerId, followedId)
+                .uri("/v1/followers/unfollow/{followerId}/follower/{followedId}/followed", followerId, followedId)
                 .exchange()
                 .expectStatus().isBadRequest()
                 .expectBody(ErrorResponse.class)
@@ -116,7 +116,7 @@ public class GlobalControllerAdviceTest {
         FollowedNotFoundException exception = new FollowedNotFoundException();
         when(followerInputPort.unfollow(anyLong(),anyLong())).thenReturn(Mono.error(exception));
         webTestClient.delete()
-                .uri("/followers/unfollow/{followerId}/follower/{followedId}/followed", followerId, followedId)
+                .uri("/v1/followers/unfollow/{followerId}/follower/{followedId}/followed", followerId, followedId)
                 .exchange()
                 .expectStatus().isBadRequest()
                 .expectBody(ErrorResponse.class)
@@ -135,7 +135,7 @@ public class GlobalControllerAdviceTest {
         when(followerInputPort.save(any())).thenReturn(Mono.error(new FollowerRuleException("You are follower this user")));
 
         webTestClient.post()
-                .uri("/followers")
+                .uri("/v1/followers")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(objectMapper.writeValueAsString(createFollowerRequest))
                 .exchange()

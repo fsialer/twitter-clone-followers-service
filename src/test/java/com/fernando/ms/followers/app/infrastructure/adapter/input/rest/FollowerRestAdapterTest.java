@@ -51,7 +51,7 @@ public class FollowerRestAdapterTest {
         when(followerRestMapper.toQuantityFollowerResponse(anyLong())).thenReturn(quantityFollowerResponse);
 
         webTestClient.get()
-                .uri("/followers/quantity",1L)
+                .uri("/v1/followers/quantity",1L)
                 .header("X-User-Id","1")
                 .exchange()
                 .expectStatus().isOk()
@@ -74,7 +74,7 @@ public class FollowerRestAdapterTest {
         when(followerRestMapper.toFollowResponse(any(Follower.class))).thenReturn(followResponse);
 
         webTestClient.post()
-                .uri("/followers")
+                .uri("/v1/followers")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(objectMapper.writeValueAsString(createFollowerRequest))
                 .exchange()
@@ -96,7 +96,7 @@ public class FollowerRestAdapterTest {
         when(followerInputPort.unfollow(anyLong(), anyLong())).thenReturn(Mono.empty());
 
         webTestClient.delete()
-                .uri("/followers/unfollow/{followedId}", followerId, followedId)
+                .uri("/v1/followers/unfollow/{followedId}", followerId, followedId)
                 .header("X-User-Id","1")
                 .exchange()
                 .expectStatus().isNoContent();
@@ -118,7 +118,7 @@ public class FollowerRestAdapterTest {
         when(followerRestMapper.toFollowersResponse(any(Flux.class))).thenReturn(Flux.just(followerResponse));
 
         webTestClient.get()
-                .uri(uriBuilder -> uriBuilder.path("/followers/paginated")
+                .uri(uriBuilder -> uriBuilder.path("/v1/followers/paginated")
                         .queryParam("page", page)
                         .queryParam("size", size)
                         .build())
@@ -143,7 +143,7 @@ public class FollowerRestAdapterTest {
         when(followerRestMapper.toFollowsResponse(any(Flux.class))).thenReturn(Flux.just(followResponse));
 
         webTestClient.get()
-                .uri("/followers/find-followed-by-follower/{followerId}", followerId)
+                .uri("/v1/followers/find-followed-by-follower/{followerId}", followerId)
                 .exchange()
                 .expectStatus().isOk()
                 .expectBodyList(FollowResponse.class)
@@ -165,7 +165,7 @@ public class FollowerRestAdapterTest {
         when(followerRestMapper.toFollowersResponse(any(Flux.class))).thenReturn(Flux.just(followerResponse));
 
         webTestClient.get()
-                .uri("/followers/{followerId}", followerId)
+                .uri("/v1/followers/{followerId}", followerId)
                 .exchange()
                 .expectStatus().isOk()
                 .expectBodyList(FollowerResponse.class)

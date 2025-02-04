@@ -18,7 +18,7 @@ import java.net.URI;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/followers")
+@RequestMapping("/v1/followers")
 public class FollowerRestAdapter {
     private final FollowerInputPort followerInputPort;
     private final FollowerRestMapper followerRestMapper;
