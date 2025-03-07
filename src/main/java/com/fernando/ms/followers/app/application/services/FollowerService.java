@@ -3,6 +3,8 @@ package com.fernando.ms.followers.app.application.services;
 import com.fernando.ms.followers.app.application.ports.input.FollowerInputPort;
 import com.fernando.ms.followers.app.application.ports.output.ExternalUserOutputPort;
 import com.fernando.ms.followers.app.application.ports.output.FollowerPersistencePort;
+import com.fernando.ms.followers.app.application.services.proxy.IProcess;
+import com.fernando.ms.followers.app.application.services.proxy.ProcessFactory;
 import com.fernando.ms.followers.app.domain.exception.FollowedNotFoundException;
 import com.fernando.ms.followers.app.domain.exception.FollowerNotFoundException;
 import com.fernando.ms.followers.app.domain.exception.FollowerRuleException;
@@ -29,26 +31,8 @@ public class FollowerService implements FollowerInputPort {
 
     @Override
     public Mono<Follower> save(Follower follower) {
-        return followerPersistencePort.existsByFollowerIdFollowedId(follower.getFollower().getId() ,follower.getFollowed().getId())
-                        .flatMap(existsFollowerUnique->{
-                            if(Boolean.TRUE.equals(existsFollowerUnique)){
-                                return Mono.error(new FollowerRuleException("You are follower this user."));
-                            }
-                            return externalUserOutputPort.verify(follower.getFollower().getId())
-                                    .flatMap(existsFollower->{
-                                        if(Boolean.FALSE.equals(existsFollower)){
-                                            return Mono.error(FollowerNotFoundException::new);
-                                        }
-                                        return externalUserOutputPort.verify(follower.getFollowed().getId())
-                                                .flatMap(existsFollowed->{
-                                                    if(Boolean.FALSE.equals(existsFollowed)){
-                                                        return Mono.error(FollowedNotFoundException::new);
-                                                    }
-                                                    return followerPersistencePort.save(follower);
-                                                });
-                                    });
-                        });
-
+        IProcess process= ProcessFactory.validSaveFollower(followerPersistencePort,externalUserOutputPort);
+        return process.doProcess(follower).flatMap(followerPersistencePort::save);
     }
 
     @Override
@@ -64,12 +48,8 @@ public class FollowerService implements FollowerInputPort {
     @Override
     public Flux<User> findFollowersPaginated(Long followerId, Long page, Long size) {
         return followerPersistencePort.findFollowersPaginated(followerId,page,size)
-                .flatMap(follower -> {
-                    return Flux.just(follower.getFollower().getId());
-                })
-                .flatMap(ids->{
-                    return externalUserOutputPort.findByIds(Collections.singletonList(ids));
-                });
+                .flatMap(follower -> Flux.just(follower.getFollower().getId()))
+                .flatMap(ids-> externalUserOutputPort.findByIds(Collections.singletonList(ids)));
     }
 
     @Override
@@ -80,11 +60,7 @@ public class FollowerService implements FollowerInputPort {
     @Override
     public Flux<User> findFollowers(Long followerId) {
         return followerPersistencePort.findFollowers(followerId)
-                .flatMap(follower -> {
-                    return Flux.just(follower.getFollower().getId());
-                })
-                .flatMap(ids->{
-                    return externalUserOutputPort.findByIds(Collections.singletonList(ids));
-                });
+                .flatMap(follower -> Flux.just(follower.getFollower().getId()))
+                .flatMap(ids->externalUserOutputPort.findByIds(Collections.singletonList(ids)));
     }
 }

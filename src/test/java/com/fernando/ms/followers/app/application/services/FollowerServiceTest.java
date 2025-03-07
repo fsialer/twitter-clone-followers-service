@@ -27,7 +27,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class FollowerServiceTest {
+class FollowerServiceTest {
     @Mock
     private FollowerPersistencePort followerPersistencePort;
 
